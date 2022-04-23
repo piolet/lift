@@ -36,7 +36,7 @@ const SCHEMA = {
     type: "object",
     properties: {
         type: { const: "mono-api2" },
-        lambdaUrl: {type: "string"},
+        functionName: { type: "string" },
         domain: { type: "string" },
         certificate: { type: "string" },
         forwardedHeaders: { type: "array", items: { type: "string" } },
@@ -71,9 +71,9 @@ export class MonoApi2 extends AwsConstruct {
             );
         }
 
-        if (configuration.lambdaUrl === undefined) {
+        if (configuration.functionName === undefined) {
             throw new ServerlessError(
-                `Invalid configuration in 'constructs.${id}.lambdaUrl': lambdaUrl is mandatory.`,
+                `Invalid configuration in 'constructs.${id}.functionName': functionName is mandatory.`,
                 "LIFT_INVALID_CONSTRUCT_CONFIGURATION"
             );
         }
@@ -100,9 +100,7 @@ export class MonoApi2 extends AwsConstruct {
             headerBehavior: CacheHeaderBehavior.allowList("Authorization"),
         });
 
-        // const lambdaId = this.provider.naming.getLambdaLogicalId(`${this.configuration.functionName}`);
-        // const lambdaUrl = Fn.join(".", [Fn.ref(lambdaId), `lambda-url.${this.provider.region}.on.aws`]);
-        const lambdaUrl = `${configuration.lambdaUrl}`;
+        const lambdaUrl = this.provider.naming.getLambdaFunctionUrlLogicalId(`${this.configuration.functionName}`);
 
         // Cast the domains to an array
         this.domains = configuration.domain !== undefined ? flatten([configuration.domain]) : undefined;
